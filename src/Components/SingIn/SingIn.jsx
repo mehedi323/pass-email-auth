@@ -1,11 +1,12 @@
-import { signInWithEmailAndPassword } from 'firebase/auth';
-import React, { useState } from 'react';
+import { sendPasswordResetEmail, signInWithEmailAndPassword } from 'firebase/auth';
+import React, { useRef, useState } from 'react';
 import auth from '../../Firebase/Firebase.config';
 
 const SingIn = () => {
 
     const [singInError, setSingInError] = useState('');
     const [success, setSuccess] = useState('');
+    const emailRef = useRef(null);
 
     const handleSingIn = e => {
         e.preventDefault();
@@ -13,11 +14,11 @@ const SingIn = () => {
         const password = e.target.password.value;
         console.log(email, password);
 
-        if(password.length <6){
+        if (password.length < 6) {
             setSingInError(' Password should be at least 6 characters or longer')
             return;
         }
-        else if(!/[A-Z]/.test(password)){
+        else if (!/[A-Z]/.test(password)) {
             setSingInError('password should be at least one Uppercase')
             return;
         }
@@ -38,6 +39,26 @@ const SingIn = () => {
 
     }
 
+    const handleResetPassword = () =>{
+        const email = emailRef.current.value;
+        if(!email){
+            console.log('please provid your email', emailRef.current.value)
+            return;
+        }
+        else if(!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email)){
+            console.log('Please check your email')
+            return;
+        }
+
+        sendPasswordResetEmail(auth, email)
+        .then(()=>{
+            alert('please check your email');
+        })
+        .catch(error=>{
+            console.log(error);
+        })
+    }
+
     return (
         <div className="hero min-h-screen bg-base-200">
             <div className="hero-content flex-col lg:flex-row-reverse">
@@ -51,7 +72,13 @@ const SingIn = () => {
                             <label className="label">
                                 <span className="label-text">Email</span>
                             </label>
-                            <input type="email" name='email' placeholder="email" className="input input-bordered" required />
+                            <input
+                                type="email"
+                                name='email'
+                                ref={emailRef}
+                                placeholder="email"
+                                className="input input-bordered"
+                                required />
                         </div>
                         <div className="form-control">
                             <label className="label">
@@ -59,7 +86,7 @@ const SingIn = () => {
                             </label>
                             <input type="password" name='password' placeholder="password" className="input input-bordered" required />
                             <label className="label">
-                                <a href="#" className="label-text-alt link link-hover">Forgot password?</a>
+                                <a onClick={handleResetPassword} href="#" className="label-text-alt link link-hover">Forgot password?</a>
                             </label>
                         </div>
                         <div className="form-control mt-6">
